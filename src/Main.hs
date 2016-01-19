@@ -12,5 +12,5 @@ import System.Environment
 
 main :: IO ()
 main = do
-  args <- getArgs
-  putStrLn $ (args !! 0) ++ ", " ++ (args !! 1)
+  greeting:name:_ <- getArgs
+  putStrLn $ greeting ++ ", " ++ name
