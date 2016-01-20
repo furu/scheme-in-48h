@@ -1,15 +1,23 @@
 module Main where
 
-import System.IO
+-- 2. 構文解析
 
--- 練習問題1
--- 3. getLineはコンソールから一行読み込み、文字列として返すIOアクションです。
---    名前を入力を促し、名前を読み、コマンドライン引数の代わりにそれを出力する
---    ようにプログラムを変更しなさい。
+-- 簡単なパーサ
+
+-- Text.ParserCombinators.Parsec から spaces を除くすべての関数をインポート
+-- spaces は後で自分で定義するため
+import Text.ParserCombinators.Parsec hiding (spaces)
+import System.Environment
+
+symbol :: Parser Char
+symbol = oneOf "!#$%&|*+-/:<=>?@^_~"
+
+readExpr :: String -> String
+readExpr input = case parse symbol "lisp" input of
+                   Left err  -> "No match: " ++ show err
+                   Right val -> "Found value"
 
 main :: IO ()
 main = do
-  putStr "put your name: "
-  hFlush stdout
-  name <- getLine
-  putStrLn $ "Hi, " ++ name
+  args <- getArgs
+  putStrLn $ readExpr $ head args
