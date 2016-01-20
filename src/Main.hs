@@ -3,14 +3,14 @@ module Main where
 import System.Environment
 
 -- 練習問題1
--- 1. コマンドラインから2つの引数を取り、
--- その両方を使ってメッセージを出力するようにプログラムを変更しなさい。
---
--- 1番目の引数として挨拶の言葉を受け取り、
--- 2番目の引数として名前を受け取り、
--- {挨拶の言葉}, {名前} を表示するように変更した。
+-- 2. 2つの引数に対して簡単な算術演算を行うようにプログラムを変更しなさい。
+--    文字列を数値に変換するにはreadが、数値を文字列に戻すにはshowが使えます。
+--    いくつか違う演算を行うよう試してみてください。
 
 main :: IO ()
 main = do
-  greeting:name:_ <- getArgs
-  putStrLn $ greeting ++ ", " ++ name
+  x:y:_ <- getArgs
+  putStrLn $ "加算: " ++ (show $ read x + read y)
+  putStrLn $ "減算: " ++ (show $ read x - read y)
+  putStrLn $ "乗算: " ++ (show $ read x * read y)
+  putStrLn $ "除算: " ++ (show $ read x / read y)
