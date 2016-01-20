@@ -10,7 +10,7 @@ import System.Environment
 main :: IO ()
 main = do
   x:y:_ <- getArgs
-  putStrLn $ "加算: " ++ (show $ read x + read y)
-  putStrLn $ "減算: " ++ (show $ read x - read y)
-  putStrLn $ "乗算: " ++ (show $ read x * read y)
-  putStrLn $ "除算: " ++ (show $ read x / read y)
+  putStrLn $ "加算: " ++ show (read x + read y)
+  putStrLn $ "減算: " ++ show (read x - read y)
+  putStrLn $ "乗算: " ++ show (read x * read y)
+  putStrLn $ "除算: " ++ show (read x / read y)
