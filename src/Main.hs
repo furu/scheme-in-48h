@@ -1,16 +1,12 @@
 module Main where
 
-import System.Environment
-
 -- 練習問題1
--- 2. 2つの引数に対して簡単な算術演算を行うようにプログラムを変更しなさい。
---    文字列を数値に変換するにはreadが、数値を文字列に戻すにはshowが使えます。
---    いくつか違う演算を行うよう試してみてください。
+-- 3. getLineはコンソールから一行読み込み、文字列として返すIOアクションです。
+--    名前を入力を促し、名前を読み、コマンドライン引数の代わりにそれを出力する
+--    ようにプログラムを変更しなさい。
 
 main :: IO ()
 main = do
-  x:y:_ <- getArgs
-  putStrLn $ "加算: " ++ show (read x + read y)
-  putStrLn $ "減算: " ++ show (read x - read y)
-  putStrLn $ "乗算: " ++ show (read x * read y)
-  putStrLn $ "除算: " ++ show (read x / read y)
+  putStr "put your name: "
+  name <- getLine
+  putStrLn $ "Hi, " ++ name
