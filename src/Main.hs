@@ -2,7 +2,10 @@ module Main where
 
 -- 2. 構文解析
 
--- 空白文字
+-- 練習問題2
+-- 1. 以下の手法を使ってparseNumberを書き直しなさい。
+--   1. do記法
+--   2. >>= 演算子を使った明示的なシーケンシング
 
 -- Text.ParserCombinators.Parsec から spaces を除くすべての関数をインポート
 -- spaces は後で自分で定義するため
@@ -43,7 +46,9 @@ parseAtom = do
              _    -> Atom atom
 
 parseNumber :: Parser LispVal
-parseNumber = liftM (Number . read) $ many1 digit
+parseNumber = do
+  number <- many1 digit
+  return $ (Number . read) number
 
 -- <|> は1つ目のパーサを試し、それが失敗したら2つ目を試し、
 -- それも失敗したら3つ目を試し…、成功したパーサから返ってきた値を返す
