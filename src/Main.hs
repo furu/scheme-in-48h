@@ -3,9 +3,16 @@ module Main where
 -- 2. 構文解析
 
 -- 練習問題2
--- 1. 以下の手法を使ってparseNumberを書き直しなさい。
---   1. do記法
---   2. >>= 演算子を使った明示的なシーケンシング
+-- 2. ここでの文字列リテラルは、文字列中の引用符のエスケープをサポートしていないので、
+--    完全にR5RS compliantではありません。\"が文字列を終わりにせず、
+--    二重引用符のリテラル表現となるようにparseStringを変えなさい。
+--    noneOf "\""を非引用符又はバックスラッシュと引用符を受理する
+--    新しいパーサアクションに置き換えるとよいでしょう。
+--
+--    "\"foo\\\"bar\\\\baz\"" を正しくパースできるようにするということ
+--
+--    correct: "foo\"bar\\baz"
+--    wrong:   "foo\\"
 
 -- Text.ParserCombinators.Parsec から spaces を除くすべての関数をインポート
 -- spaces は後で自分で定義するため
@@ -27,10 +34,13 @@ symbol = oneOf "!#$%&|*+-/:<=>?@^_~"
 spaces :: Parser ()
 spaces = skipMany1 space
 
+escapedChars :: Parser Char
+escapedChars = char '\\' >> oneOf "\\\""
+
 parseString :: Parser LispVal
 parseString = do
   char '"'
-  x <- many (noneOf "\"")
+  x <- many $ escapedChars <|> noneOf "\"\\"
   char '"'
   return $ String x
 
