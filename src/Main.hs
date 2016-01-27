@@ -3,16 +3,9 @@ module Main where
 -- 2. 構文解析
 
 -- 練習問題2
--- 2. ここでの文字列リテラルは、文字列中の引用符のエスケープをサポートしていないので、
---    完全にR5RS compliantではありません。\"が文字列を終わりにせず、
---    二重引用符のリテラル表現となるようにparseStringを変えなさい。
---    noneOf "\""を非引用符又はバックスラッシュと引用符を受理する
---    新しいパーサアクションに置き換えるとよいでしょう。
+-- 3. \n、\r、\t、\\などのエスケープ文字も認識するようにしなさい。
 --
---    "\"foo\\\"bar\\\\baz\"" を正しくパースできるようにするということ
---
---    correct: "foo\"bar\\baz"
---    wrong:   "foo\\"
+-- エスケープ文字というか制御文字？
 
 -- Text.ParserCombinators.Parsec から spaces を除くすべての関数をインポート
 -- spaces は後で自分で定義するため
@@ -35,7 +28,14 @@ spaces :: Parser ()
 spaces = skipMany1 space
 
 escapedChars :: Parser Char
-escapedChars = char '\\' >> oneOf "\\\""
+escapedChars = do
+  char '\\'
+  x <- oneOf "\\\"nrt"
+  return $ case x of
+                'n' -> '\n'
+                'r' -> '\r'
+                't' -> '\t'
+                _   -> x
 
 parseString :: Parser LispVal
 parseString = do
