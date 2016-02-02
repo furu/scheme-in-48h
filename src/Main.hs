@@ -59,6 +59,22 @@ parseAtom = do
              "#f" -> Bool False
              _    -> Atom atom
 
+-- | parseNumber
+--
+-- >>> parseTest parseNumber "#b101"
+-- Number 5
+--
+-- >>> parseTest parseNumber "#o777"
+-- Number 511
+--
+-- >>> parseTest parseNumber "364"
+-- Number 364
+--
+-- >>> parseTest parseNumber "#d114"
+-- Number 114
+--
+-- >>> parseTest parseNumber "#x11F"
+-- Number 287
 parseNumber :: Parser LispVal
 parseNumber = parseBin <|> parseOct <|> parseDec <|> parseHex
 
@@ -71,7 +87,7 @@ parseNumber = parseBin <|> parseOct <|> parseDec <|> parseHex
 -- Number 15
 parseBin :: Parser LispVal
 parseBin = do
-  try (char '#' >> char 'b')
+  try $ string "#b"
   x <- many1 $ oneOf "01"
   return $ Number (readBin x)
 
@@ -90,7 +106,7 @@ readBin xs = toInteger $ sum $ zipWith (*) digits weights
 -- Number 8
 parseOct :: Parser LispVal
 parseOct = do
-  try (char '#' >> char 'o')
+  try $ string "#o"
   x <- many1 octDigit
   return $ Number (fst $ head $ readOct x)
 
@@ -103,7 +119,7 @@ parseOct = do
 -- Number 114
 parseDec :: Parser LispVal
 parseDec = do
-  x <- try (char '#' >> char 'd' >> many1 digit) <|> many1 digit
+  x <- try (string "#d" >> many1 digit) <|> many1 digit
   return $ Number (read x)
 
 -- | parseHex
@@ -115,7 +131,7 @@ parseDec = do
 -- Number 170
 parseHex :: Parser LispVal
 parseHex = do
-  try (char '#' >> char 'x')
+  try $ string "#x"
   x <- many1 hexDigit
   return $ Number (fst $ head $ readHex x)
 
