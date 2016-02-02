@@ -3,17 +3,21 @@ module Main where
 -- 2. 構文解析
 
 -- 練習問題2
--- 3. \n、\r、\t、\\などのエスケープ文字も認識するようにしなさい。
---
--- エスケープ文字というか制御文字？
+-- 4. parseNumberがScheme standard for different basesもサポートするようにしなさい。
+--    それにあたってはreadOctとreadHexが便利でしょう。
 
 -- Text.ParserCombinators.Parsec から spaces を除くすべての関数をインポート
 -- spaces は後で自分で定義するため
 import Text.ParserCombinators.Parsec hiding (spaces)
 import System.Environment
 import Control.Monad
+import Numeric
+import Data.Char
 
 -- Lisp の値を表すデータ型
+--   Int: 整数。有界 (最小値と最大値がある)。
+--   Integer: 整数。有界でない (とても大きい数を表すことができる)。
+--            Int の方が効率的。
 data LispVal =   Atom String
                | List [LispVal]
                | DottedList [LispVal] LispVal
@@ -56,7 +60,64 @@ parseAtom = do
              _    -> Atom atom
 
 parseNumber :: Parser LispVal
-parseNumber = liftM (Number . read) (many1 digit)
+parseNumber = parseBin <|> parseOct <|> parseDec <|> parseHex
+
+-- | parseBin
+--
+-- >>> parseTest parseBin "#b101"
+-- Number 5
+--
+-- >>> parseTest parseBin "#b1111"
+-- Number 15
+parseBin :: Parser LispVal
+parseBin = do
+  try (char '#' >> char 'b')
+  x <- many1 $ oneOf "01"
+  return $ Number (readBin x)
+
+readBin :: String -> Integer
+readBin xs = toInteger $ sum $ zipWith (*) digits weights
+  where
+    digits  = map digitToInt xs
+    weights = map (\x -> 2 ^ x) (reverse [0..(length xs - 1)])
+
+-- | parseOct
+--
+-- >>> parseTest parseOct "#o777"
+-- Number 511
+--
+-- >>> parseTest parseOct "#o10"
+-- Number 8
+parseOct :: Parser LispVal
+parseOct = do
+  try (char '#' >> char 'o')
+  x <- many1 octDigit
+  return $ Number (fst $ head $ readOct x)
+
+-- | parseDec
+--
+-- >>> parseTest parseDec "364"
+-- Number 364
+--
+-- >>> parseTest parseDec "#d114"
+-- Number 114
+parseDec :: Parser LispVal
+parseDec = do
+  x <- try (char '#' >> char 'd' >> many1 digit) <|> many1 digit
+  return $ Number (read x)
+
+-- | parseHex
+--
+-- >>> parseTest parseHex "#x11F"
+-- Number 287
+--
+-- >>> parseTest parseHex "#xAA"
+-- Number 170
+parseHex :: Parser LispVal
+parseHex = do
+  try (char '#' >> char 'x')
+  x <- many1 hexDigit
+  return $ Number (fst $ head $ readHex x)
 
 -- <|> は1つ目のパーサを試し、それが失敗したら2つ目を試し、
 -- それも失敗したら3つ目を試し…、成功したパーサから返ってきた値を返す
