@@ -26,7 +26,7 @@ data LispVal =   Atom String
                | Bool Bool deriving (Show)
 
 symbol :: Parser Char
-symbol = oneOf "!#$%&|*+-/:<=>?@^_~"
+symbol = oneOf "!$%&|*+-/:<=>?@^_~"
 
 spaces :: Parser ()
 spaces = skipMany1 space
@@ -48,16 +48,21 @@ parseString = do
   char '"'
   return $ String x
 
+parseBool :: Parser LispVal
+parseBool = do
+  char '#'
+  x <- oneOf "tf"
+  return $ case x of
+                't' -> Bool True
+                'f' -> Bool False
+
 -- アトムは1つの文字か記号のあとに0個以上の文字、数字、または記号が連なったもの
 parseAtom :: Parser LispVal
 parseAtom = do
   first <- letter <|> symbol
   rest  <- many (letter <|> digit <|> symbol)
   let atom = first:rest
-  return $ case atom of
-             "#t" -> Bool True
-             "#f" -> Bool False
-             _    -> Atom atom
+  return $ Atom atom
 
 -- | parseNumber
 --
@@ -138,7 +143,7 @@ parseHex = do
 -- <|> は1つ目のパーサを試し、それが失敗したら2つ目を試し、
 -- それも失敗したら3つ目を試し…、成功したパーサから返ってきた値を返す
 parseExpr :: Parser LispVal
-parseExpr = parseAtom <|> parseString <|> parseNumber
+parseExpr = parseAtom <|> parseString <|> parseNumber <|> parseBool
 
 readExpr :: String -> String
 readExpr input = case parse parseExpr "lisp" input of
