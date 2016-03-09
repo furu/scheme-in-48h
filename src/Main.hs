@@ -3,8 +3,8 @@ module Main where
 -- 2. 構文解析
 
 -- 練習問題2
--- 4. parseNumberがScheme standard for different basesもサポートするようにしなさい。
---    それにあたってはreadOctとreadHexが便利でしょう。
+-- 5. CharacterコンストラクタをLispValに加え、
+--    R5RSに書かれているようにcharacter literalsのパーサを実装しなさい。
 
 -- Text.ParserCombinators.Parsec から spaces を除くすべての関数をインポート
 -- spaces は後で自分で定義するため
@@ -23,7 +23,8 @@ data LispVal =   Atom String
                | DottedList [LispVal] LispVal
                | Number Integer
                | String String
-               | Bool Bool deriving (Show)
+               | Bool Bool
+               | Character Char deriving (Show)
 
 symbol :: Parser Char
 symbol = oneOf "!$%&|*+-/:<=>?@^_~"
@@ -140,10 +141,47 @@ parseHex = do
   x <- many1 hexDigit
   return $ Number (fst $ head $ readHex x)
 
+parseChar :: Parser LispVal
+parseChar = try parseCharacterName <|> parseCharacter
+
+-- | parseCharacter
+--
+-- >>> parseTest parseCharacter "#\\a"
+-- Character 'a'
+--
+-- >>> parseTest parseCharacter "#\\A"
+-- Character 'A'
+--
+-- >>> parseTest parseCharacter "#\\("
+-- Character '('
+--
+-- >>> parseTest parseCharacter "#\\ "
+-- Character ' '
+parseCharacter :: Parser LispVal
+parseCharacter = do
+  string "#\\"
+  x <- anyChar
+  return $ Character x
+
+-- | parseCharacterName
+--
+-- >>> parseTest parseCharacterName "#\\space"
+-- Character ' '
+--
+-- >>> parseTest parseCharacterName "#\\newline"
+-- Character '\n'
+parseCharacterName :: Parser LispVal
+parseCharacterName = do
+  string "#\\"
+  x <- string "space" <|> string "newline"
+  return $ case x of
+                "space"   -> Character ' '
+                "newline" -> Character '\n'
+
 -- <|> は1つ目のパーサを試し、それが失敗したら2つ目を試し、
 -- それも失敗したら3つ目を試し…、成功したパーサから返ってきた値を返す
 parseExpr :: Parser LispVal
-parseExpr = parseAtom <|> parseString <|> parseNumber <|> parseBool
+parseExpr = parseAtom <|> parseString <|> parseNumber <|> parseBool <|> parseChar
 
 readExpr :: String -> String
 readExpr input = case parse parseExpr "lisp" input of
