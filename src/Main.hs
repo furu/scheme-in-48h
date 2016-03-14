@@ -159,8 +159,9 @@ parseChar = try parseCharacterName <|> parseCharacter
 -- Character ' '
 parseCharacter :: Parser LispVal
 parseCharacter = do
-  string "#\\"
+  try $ string "#\\"
   x <- anyChar
+  notFollowedBy alphaNum
   return $ Character x
 
 -- | parseCharacterName
@@ -172,16 +173,20 @@ parseCharacter = do
 -- Character '\n'
 parseCharacterName :: Parser LispVal
 parseCharacterName = do
-  string "#\\"
-  x <- string "space" <|> string "newline"
+  try $ string "#\\"
+  x <- try (string "space" <|> string "newline")
+  notFollowedBy alphaNum
   return $ case x of
                 "space"   -> Character ' '
                 "newline" -> Character '\n'
 
 -- <|> は1つ目のパーサを試し、それが失敗したら2つ目を試し、
 -- それも失敗したら3つ目を試し…、成功したパーサから返ってきた値を返す
+-- The parser p <|> q first applies p. If it succeeds, the value of p is returned.
+-- If p fails without consuming any input, parser q is tried.
 parseExpr :: Parser LispVal
-parseExpr = parseAtom <|> parseString <|> parseNumber <|> parseBool <|> parseChar
+parseExpr =
+  parseAtom <|> parseString <|> parseNumber <|> try parseBool <|> parseChar
 
 readExpr :: String -> String
 readExpr input = case parse parseExpr "lisp" input of
@@ -191,4 +196,5 @@ readExpr input = case parse parseExpr "lisp" input of
 main :: IO ()
 main = do
   args <- getArgs
+  putStrLn $ "Parsed input: " ++ head args
   putStrLn $ readExpr $ head args
